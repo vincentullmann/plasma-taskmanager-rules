@@ -6,7 +6,7 @@ Rules live in one shared file: `~/.config/plasma-taskmanager-rules/rules.json`.
 ## Install (Arch)
 
 ```sh
-makepkg -si
+makepkg -fsi
 ```
 
 Rebuild after Plasma upgrades (the C++ plugin links against Qt).

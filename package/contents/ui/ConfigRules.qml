@@ -21,7 +21,9 @@ KCM.SimpleKCM {
     readonly property var draftErrors: Rules.validate(draft).errors
 
     function edit(newDraft) {
-        draft = newDraft
+        // Drafts arriving through a QML signal(var) hold V4Sequence instead of real arrays; a JSON
+        // round trip restores plain arrays (Rules.validate relies on Array.isArray).
+        draft = JSON.parse(JSON.stringify(newDraft))
         saveError = ""
         configurationChanged()
     }

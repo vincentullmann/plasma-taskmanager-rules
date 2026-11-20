@@ -11,13 +11,17 @@ QtObject {
     readonly property string file: "~/.config/plasma-taskmanager-rules/rules.json"
     property var page: ConfigRules {}
 
+    // RuleCard hands drafts to the page through a `signal edited(var)`, which turns JS arrays into
+    // V4Sequence (Array.isArray false). The page must cope.
+    signal edited(var newDraft)
     function fail(msg) { console.error("FAIL: " + msg); Qt.exit(1) }
 
     Component.onCompleted: {
         const p = page
         if (p.draft.rules.length !== 0) return fail("expected empty draft")
 
-        p.edit(Editor.addRule(p.draft))
+        edited.connect(d => p.edit(d))
+        edited(Editor.addRule(p.draft))
         if (p.draft.rules.length !== 1) return fail("addRule")
         if (p.draftErrors.length !== 0) return fail("fresh rule should be valid: " + p.draftErrors)
 
