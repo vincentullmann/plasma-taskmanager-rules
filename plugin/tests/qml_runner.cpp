@@ -7,6 +7,7 @@
 #include <QUrl>
 #include <QDebug>
 #include <KLocalizedContext>
+#include <KLocalizedString>
 
 static bool s_sawWarning = false;
 static QtMessageHandler s_prev = nullptr;
@@ -30,16 +31,16 @@ int main(int argc, char **argv)
         qCritical() << "usage: qml_runner <import-path> <file.qml>";
         return 2;
     }
+    KLocalizedString::setApplicationDomain("tmrules-tests");
     s_prev = qInstallMessageHandler(handler);
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
     engine.addImportPath(args.at(1));
-    QObject::connect(&engine, &QQmlApplicationEngine::exit, &app, [&app](int code) {
-        QCoreApplication::exit(code == 0 && s_sawWarning ? 4 : code);
-    });
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app,
                      [] { QCoreApplication::exit(3); }, Qt::QueuedConnection);
     engine.load(QUrl::fromLocalFile(args.at(2)));
-    return app.exec();
+    // QQmlApplicationEngine already routes Qt.exit(code) to QCoreApplication::exit(code).
+    const int code = app.exec();
+    return code == 0 && s_sawWarning ? 4 : code;
 }

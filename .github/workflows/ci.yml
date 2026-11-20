@@ -12,8 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:latest
     steps:
-      - run: pacman -Syu --noconfirm base-devel cmake ninja extra-cmake-modules qt6-declarative plasma-workspace libplasma git
+      - run: pacman -Syu --noconfirm base-devel cmake ninja extra-cmake-modules qt6-declarative plasma-workspace libplasma ki18n git nodejs
       - uses: actions/checkout@v4
       - run: cmake -S . -B build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr
       - run: cmake --build build
+      - run: ctest --test-dir build --output-on-failure
       - run: DESTDIR=$PWD/stage cmake --install build
