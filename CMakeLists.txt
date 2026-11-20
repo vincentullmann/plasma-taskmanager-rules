@@ -16,11 +16,12 @@ find_package(Plasma REQUIRED)
 
 set(PLASMOID_ID "com.github.vincentullmann.taskmanagerrules")
 
+include(CTest)
 add_subdirectory(plugin)
+
 
 # Plasmoid package (QML + JS + metadata). Installed as a plain Plasma/Applet package.
 install(DIRECTORY package/
         DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/${PLASMOID_ID}
         PATTERN "*~" EXCLUDE)
 
-enable_testing()

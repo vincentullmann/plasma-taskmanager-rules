@@ -10,6 +10,10 @@ qt_add_qml_module(tmrules_io
 )
 target_link_libraries(tmrules_io PUBLIC Qt6::Core Qt6::Qml)
 
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
+
 # Standard Qt QML import layout: <QML dir>/com/github/.../io/{qmldir,lib*plugin.so}
 set(_tmrules_io_dest ${KDE_INSTALL_QMLDIR}/com/github/vincentullmann/taskmanagerrules/io)
 install(TARGETS tmrules_ioplugin LIBRARY DESTINATION ${_tmrules_io_dest})
