@@ -12,14 +12,14 @@ PlasmoidItem {
     readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
 
     ConfigStore {
-        id: store
+        id: rulesStore
     }
 
     TaskManager.VirtualDesktopInfo { id: virtualDesktopInfo }
     TaskManager.ActivityInfo { id: activityInfo }
 
     TaskManager.TasksModel {
-        id: tasksModel
+        id: windowsModel
 
         // Only this panel's screen, the current virtual desktop and activity.
         filterByScreen: true
@@ -36,8 +36,8 @@ PlasmoidItem {
     }
 
     fullRepresentation: TaskList {
-        store: store
-        tasksModel: tasksModel
+        store: rulesStore
+        tasksModel: windowsModel
         vertical: root.vertical
     }
 }
