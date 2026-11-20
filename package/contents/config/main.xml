@@ -22,6 +22,10 @@
       <min>0</min>
       <max>64</max>
     </entry>
+    <entry name="backgroundColor" type="Color">
+      <label>Default background of window buttons (a rule's background overrides it)</label>
+      <default>0,0,0,0</default>
+    </entry>
     <entry name="padding" type="Int">
       <label>Padding inside each window button in pixels</label>
       <default>4</default>

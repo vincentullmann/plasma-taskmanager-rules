@@ -14,6 +14,7 @@ Item {
     property int iconSize: Kirigami.Units.iconSizes.medium
     property int fontSize: 0
     property int borderRadius: Kirigami.Units.cornerRadius
+    property color backgroundColor: "transparent"
     property int padding: Kirigami.Units.smallSpacing
     readonly property font labelFont: {
         const f = Kirigami.Theme.defaultFont
@@ -37,6 +38,14 @@ Item {
 
     function modelIndex() {
         return tasksModel.makeModelIndex(index)
+    }
+
+    // Default background from the General settings.
+    Rectangle {
+        anchors.fill: parent
+        anchors.margins: 1
+        radius: button.borderRadius
+        color: button.backgroundColor
     }
 
     // Rule `background`: fills the whole button, alpha included. Under the state overlay.

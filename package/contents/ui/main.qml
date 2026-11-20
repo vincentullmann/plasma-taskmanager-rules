@@ -42,6 +42,7 @@ PlasmoidItem {
         iconSize: Plasmoid.configuration.iconSize
         fontSize: Plasmoid.configuration.fontSize
         borderRadius: Plasmoid.configuration.borderRadius
+        backgroundColor: Plasmoid.configuration.backgroundColor
         padding: Plasmoid.configuration.padding
         gap: Plasmoid.configuration.gap
     }
