@@ -155,8 +155,26 @@ function parse(text) {
     return v.ok ? { ok: true, config: config, errors: [] } : { ok: false, errors: v.errors };
 }
 
+// Config state: { config, engine, error }. A bad file never replaces the last good state.
+function initialState() {
+    return { config: defaultConfig(), engine: { rules: [] }, error: "" };
+}
+
+function applyText(prev, text, opts) {
+    var p = parse(text);
+    var c = p.ok ? compile(p.config, opts) : null;
+    if (!p.ok || !c.ok) {
+        return { config: prev.config, engine: prev.engine, error: (p.ok ? c.errors : p.errors).join("\n") };
+    }
+    return { config: p.config, engine: c.engine, error: "" };
+}
+
+function serialize(config) {
+    return JSON.stringify(config, null, 2) + "\n";
+}
+
 if (typeof module !== "undefined" && module.exports) {
     module.exports = { defaultConfig: defaultConfig, validate: validate, compile: compile, evaluate: evaluate,
-                       resolveIcon: resolveIcon, parse: parse,
+                       resolveIcon: resolveIcon, parse: parse, initialState: initialState, applyText: applyText, serialize: serialize,
                        CONDITION_FIELDS: CONDITION_FIELDS, MATCHER_TYPES: MATCHER_TYPES };
 }

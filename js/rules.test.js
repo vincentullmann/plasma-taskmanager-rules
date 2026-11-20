@@ -191,3 +191,46 @@ test('defaultConfig is valid and empty', () => {
   assert.deepEqual(R.validate(R.defaultConfig()), { ok: true, errors: [] });
   assert.deepEqual(R.defaultConfig().rules, []);
 });
+
+test('applyText: valid text yields new state and clears error', () => {
+  const prev = R.initialState();
+  const next = R.applyText(prev, JSON.stringify(cfg(rule({ appId: { exact: 'app' } }))), { home: '/h' });
+  assert.equal(next.error, '');
+  assert.equal(next.config.rules.length, 1);
+  assert.equal(R.evaluate(next.engine, win()).fontColor, '#ff0000');
+});
+
+test('applyText: invalid JSON keeps last good state and exposes error', () => {
+  const good = R.applyText(R.initialState(), JSON.stringify(cfg(rule({ appId: { exact: 'app' } }))));
+  const bad = R.applyText(good, '{ oops');
+  assert.match(bad.error, /invalid JSON/);
+  assert.equal(bad.engine, good.engine);
+  assert.equal(bad.config, good.config);
+});
+
+test('applyText: schema error keeps last good state and lists errors', () => {
+  const good = R.applyText(R.initialState(), JSON.stringify(cfg(rule({ appId: { exact: 'app' } }))));
+  const bad = R.applyText(good, JSON.stringify(cfg(rule({ title: { regex: '(' } }))));
+  assert.match(bad.error, /not a valid regular expression/);
+  assert.equal(bad.engine, good.engine);
+});
+
+test('applyText: recovers once the file is fixed', () => {
+  const s1 = R.applyText(R.initialState(), 'nope');
+  const s2 = R.applyText(s1, JSON.stringify(cfg(rule({ appId: { exact: 'app' } }))));
+  assert.equal(s2.error, '');
+  assert.equal(s2.config.rules.length, 1);
+});
+
+test('initialState: empty engine matches nothing', () => {
+  const s = R.initialState();
+  assert.equal(s.error, '');
+  assert.deepEqual(R.evaluate(s.engine, win()), {});
+});
+
+test('serialize: pretty JSON with trailing newline that parses back', () => {
+  const c = cfg(rule({ appId: { exact: 'app' } }));
+  const text = R.serialize(c);
+  assert.ok(text.endsWith('\n'));
+  assert.deepEqual(JSON.parse(text), c);
+});

@@ -1,9 +1,13 @@
 qt_policy(SET QTP0001 NEW)
 
+# KDECMakeSettings drops the "lib" prefix from modules; the QML engine looks for lib<plugin>.so.
+set(CMAKE_SHARED_MODULE_PREFIX "lib")
+
 qt_add_qml_module(tmrules_io
     URI com.github.vincentullmann.taskmanagerrules.io
     VERSION 1.0
     PLUGIN_TARGET tmrules_ioplugin
+    OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/com/github/vincentullmann/taskmanagerrules/io
     SOURCES
         iohelper.h
         iohelper.cpp
@@ -18,5 +22,5 @@ endif()
 set(_tmrules_io_dest ${KDE_INSTALL_QMLDIR}/com/github/vincentullmann/taskmanagerrules/io)
 install(TARGETS tmrules_ioplugin LIBRARY DESTINATION ${_tmrules_io_dest})
 install(TARGETS tmrules_io LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qmldir DESTINATION ${_tmrules_io_dest})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tmrules_io.qmltypes DESTINATION ${_tmrules_io_dest} OPTIONAL)
+install(FILES ${CMAKE_BINARY_DIR}/com/github/vincentullmann/taskmanagerrules/io/qmldir DESTINATION ${_tmrules_io_dest})
+install(FILES ${CMAKE_BINARY_DIR}/com/github/vincentullmann/taskmanagerrules/io/tmrules_io.qmltypes DESTINATION ${_tmrules_io_dest} OPTIONAL)
