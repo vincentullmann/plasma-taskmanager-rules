@@ -1,0 +1,19 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  js-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node --test js/
+  build:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: pacman -Syu --noconfirm base-devel cmake ninja extra-cmake-modules qt6-declarative plasma-workspace libplasma git
+      - uses: actions/checkout@v4
+      - run: cmake -S . -B build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr
+      - run: cmake --build build
+      - run: DESTDIR=$PWD/stage cmake --install build

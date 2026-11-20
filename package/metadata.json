@@ -1,0 +1,21 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Id": "com.github.vincentullmann.taskmanagerrules",
+        "Name": "Task Manager Rules",
+        "Description": "Minimal rule-based task manager",
+        "Icon": "preferences-system-windows",
+        "Category": "Windows and Tasks",
+        "Authors": [
+            {
+                "Name": "Vincent Ullmann"
+            }
+        ],
+        "License": "GPL-2.0-or-later",
+        "Version": "0.1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-Provides": [
+        "org.kde.plasma.multitasking"
+    ]
+}
