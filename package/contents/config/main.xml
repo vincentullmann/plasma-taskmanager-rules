@@ -2,6 +2,37 @@
 <kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
-  <!-- Intentionally empty: rules live in the shared ~/.config/plasma-taskmanager-rules/rules.json -->
-  <group name="General"/>
+  <!-- Rules live in the shared ~/.config/plasma-taskmanager-rules/rules.json; only appearance is stored here. -->
+  <group name="General">
+    <entry name="iconSize" type="Int">
+      <label>Icon size in pixels</label>
+      <default>22</default>
+      <min>8</min>
+      <max>128</max>
+    </entry>
+    <entry name="fontSize" type="Int">
+      <label>Font size in points, 0 = system default</label>
+      <default>0</default>
+      <min>0</min>
+      <max>72</max>
+    </entry>
+    <entry name="borderRadius" type="Int">
+      <label>Corner radius of window buttons in pixels</label>
+      <default>5</default>
+      <min>0</min>
+      <max>64</max>
+    </entry>
+    <entry name="padding" type="Int">
+      <label>Padding inside each window button in pixels</label>
+      <default>4</default>
+      <min>0</min>
+      <max>64</max>
+    </entry>
+    <entry name="gap" type="Int">
+      <label>Gap between window buttons in pixels</label>
+      <default>0</default>
+      <min>0</min>
+      <max>64</max>
+    </entry>
+  </group>
 </kcfg>

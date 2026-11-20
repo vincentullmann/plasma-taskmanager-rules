@@ -11,6 +11,16 @@ Item {
     required property int index
     required property var model
 
+    property int iconSize: Kirigami.Units.iconSizes.medium
+    property int fontSize: 0
+    property int borderRadius: Kirigami.Units.cornerRadius
+    property int padding: Kirigami.Units.smallSpacing
+    readonly property font labelFont: {
+        const f = Kirigami.Theme.defaultFont
+        if (fontSize > 0) f.pointSize = fontSize
+        return f
+    }
+
     readonly property bool active: model.IsActive === true
     readonly property bool minimized: model.IsMinimized === true
     readonly property bool attention: model.IsDemandingAttention === true
@@ -33,7 +43,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         anchors.margins: 1
-        radius: Kirigami.Units.cornerRadius
+        radius: button.borderRadius
         visible: button.ruleActions.background !== undefined
         color: button.ruleActions.background !== undefined ? button.ruleActions.background : "transparent"
     }
@@ -42,7 +52,7 @@ Item {
         id: background
         anchors.fill: parent
         anchors.margins: 1
-        radius: Kirigami.Units.cornerRadius
+        radius: button.borderRadius
         color: button.attention ? Kirigami.Theme.neutralTextColor
              : button.active ? Kirigami.Theme.highlightColor
              : Kirigami.Theme.textColor
@@ -61,14 +71,14 @@ Item {
     }
 
     Row {
-        anchors { fill: parent; leftMargin: Kirigami.Units.smallSpacing; rightMargin: Kirigami.Units.smallSpacing }
-        spacing: Kirigami.Units.smallSpacing
+        anchors { fill: parent; leftMargin: button.padding; rightMargin: button.padding }
+        spacing: button.padding
         opacity: button.minimized ? 0.5 : 1
 
         Kirigami.Icon {
             id: icon
             anchors.verticalCenter: parent.verticalCenter
-            width: Kirigami.Units.iconSizes.medium
+            width: button.iconSize
             height: width
             source: button.iconSource !== "" ? button.iconSource : button.model.decoration
         }
@@ -79,7 +89,7 @@ Item {
             visible: width > Kirigami.Units.gridUnit
             text: button.model.display
             elide: Text.ElideRight
-            font: Kirigami.Theme.defaultFont
+            font: button.labelFont
             color: button.labelColor
         }
     }

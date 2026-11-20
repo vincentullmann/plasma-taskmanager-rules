@@ -39,5 +39,10 @@ PlasmoidItem {
         store: rulesStore
         tasksModel: windowsModel
         vertical: root.vertical
+        iconSize: Plasmoid.configuration.iconSize
+        fontSize: Plasmoid.configuration.fontSize
+        borderRadius: Plasmoid.configuration.borderRadius
+        padding: Plasmoid.configuration.padding
+        gap: Plasmoid.configuration.gap
     }
 }
