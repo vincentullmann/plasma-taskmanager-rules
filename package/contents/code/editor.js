@@ -22,7 +22,7 @@ function _matcherType(m) {
 function addRule(config) {
     var c = _clone(config);
     // An exact match on "" is inert, so a fresh rule never changes anything until it is edited.
-    c.rules.push({ name: "New rule", enabled: true, conditions: { appId: { exact: "" } }, actions: {} });
+    c.rules.push({ enabled: true, conditions: { appId: { exact: "" } }, actions: {} });
     return c;
 }
 

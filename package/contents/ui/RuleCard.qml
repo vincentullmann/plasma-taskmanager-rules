@@ -6,7 +6,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.iconthemes as KIconThemes
 import "../code/editor.js" as Editor
 
-// One rule: enable toggle, name, reorder/delete, conditions, actions.
+// One rule: enable toggle, reorder/delete, then Conditions and Styles group boxes.
 // Text fields commit on editingFinished so the card is not rebuilt while typing.
 Kirigami.AbstractCard {
     id: card
@@ -22,157 +22,221 @@ Kirigami.AbstractCard {
         return decodeURIComponent(url.toString().replace(/^file:\/\//, ""))
     }
 
+    readonly property int labelWidth: Kirigami.Units.gridUnit * 6
+
     contentItem: ColumnLayout {
         spacing: Kirigami.Units.smallSpacing
 
+        // Header: enable toggle on the left, priority / delete controls on the right.
         RowLayout {
             Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing
+
             QQC2.CheckBox {
+                id: enableBox
                 checked: card.rule.enabled !== false
                 QQC2.ToolTip.text: i18n("Enabled")
                 QQC2.ToolTip.visible: hovered
                 onToggled: card.edited(Editor.setRuleProp(card.draft, card.ruleIndex, "enabled", checked))
             }
-            QQC2.TextField {
+            QQC2.Label {
                 Layout.fillWidth: true
-                text: card.rule.name || ""
-                placeholderText: i18n("Rule name")
-                onEditingFinished: if (text !== card.rule.name) card.edited(Editor.setRuleProp(card.draft, card.ruleIndex, "name", text))
+                text: i18n("Rule %1", card.ruleIndex + 1)
+                font.bold: true
+                opacity: enableBox.checked ? 1 : 0.6
             }
-            QQC2.ToolButton {
-                icon.name: "go-up"
-                enabled: card.ruleIndex > 0
-                QQC2.ToolTip.text: i18n("Move up (lower priority)")
-                QQC2.ToolTip.visible: hovered
-                onClicked: card.edited(Editor.moveRule(card.draft, card.ruleIndex, -1))
-            }
-            QQC2.ToolButton {
-                icon.name: "go-down"
-                enabled: card.ruleIndex < card.ruleCount - 1
-                QQC2.ToolTip.text: i18n("Move down (higher priority)")
-                QQC2.ToolTip.visible: hovered
-                onClicked: card.edited(Editor.moveRule(card.draft, card.ruleIndex, 1))
+            // Joined up/down pair.
+            RowLayout {
+                spacing: 0
+                QQC2.ToolButton {
+                    icon.name: "go-up"
+                    flat: true
+                    enabled: card.ruleIndex > 0
+                    QQC2.ToolTip.text: i18n("Move up (lower priority)")
+                    QQC2.ToolTip.visible: hovered
+                    onClicked: card.edited(Editor.moveRule(card.draft, card.ruleIndex, -1))
+                }
+                QQC2.ToolButton {
+                    icon.name: "go-down"
+                    flat: true
+                    enabled: card.ruleIndex < card.ruleCount - 1
+                    QQC2.ToolTip.text: i18n("Move down (higher priority)")
+                    QQC2.ToolTip.visible: hovered
+                    onClicked: card.edited(Editor.moveRule(card.draft, card.ruleIndex, 1))
+                }
             }
             QQC2.ToolButton {
                 icon.name: "edit-delete"
+                flat: true
                 QQC2.ToolTip.text: i18n("Delete rule")
                 QQC2.ToolTip.visible: hovered
                 onClicked: card.edited(Editor.removeRule(card.draft, card.ruleIndex))
             }
         }
 
-        Kirigami.Heading { level: 5; text: i18n("When all of these match") }
+        // Everything below is indented under the enable toggle and dimmed while the rule is off.
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: enableBox.implicitWidth
+            spacing: Kirigami.Units.smallSpacing
+            opacity: enableBox.checked ? 1 : 0.6
 
-        Repeater {
-            model: Editor.conditionList(card.rule)
-            delegate: ColumnLayout {
-                id: cond
-                required property var modelData
+            QQC2.GroupBox {
+                id: condBox
                 Layout.fillWidth: true
-                spacing: 0
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    QQC2.ComboBox {
-                        model: Editor.FIELDS
-                        currentIndex: Editor.FIELDS.indexOf(cond.modelData.field)
-                        onActivated: index => card.edited(Editor.changeConditionField(card.draft, card.ruleIndex, cond.modelData.field, Editor.FIELDS[index]))
-                    }
-                    QQC2.ComboBox {
-                        id: typeBox
-                        model: Editor.TYPES
-                        currentIndex: Editor.TYPES.indexOf(cond.modelData.type)
-                        onActivated: index => card.edited(Editor.setCondition(card.draft, card.ruleIndex, cond.modelData.field,
-                            { type: Editor.TYPES[index], value: valueField.text, caseSensitive: caseBox.checked }))
-                    }
-                    QQC2.TextField {
-                        id: valueField
+                // Title row with the add button inline.
+                label: RowLayout {
+                    x: condBox.leftPadding
+                    width: condBox.availableWidth
+                    spacing: Kirigami.Units.smallSpacing
+                    QQC2.Label {
                         Layout.fillWidth: true
-                        text: cond.modelData.value
-                        placeholderText: i18n("Value")
-                        onEditingFinished: card.edited(Editor.setCondition(card.draft, card.ruleIndex, cond.modelData.field,
-                            { type: cond.modelData.type, value: text, caseSensitive: caseBox.checked }))
-                    }
-                    QQC2.CheckBox {
-                        id: caseBox
-                        text: i18n("Case sensitive")
-                        checked: cond.modelData.caseSensitive
-                        onToggled: card.edited(Editor.setCondition(card.draft, card.ruleIndex, cond.modelData.field,
-                            { type: cond.modelData.type, value: valueField.text, caseSensitive: checked }))
+                        text: i18n("Conditions")
+                        font.bold: true
                     }
                     QQC2.ToolButton {
-                        icon.name: "list-remove"
-                        enabled: Editor.conditionList(card.rule).length > 1
-                        QQC2.ToolTip.text: i18n("Remove condition")
+                        icon.name: "list-add"
+                        text: i18nc("@action:button", "Add")
+                        display: QQC2.AbstractButton.TextBesideIcon
+                        flat: true
+                        enabled: Editor.conditionList(card.rule).length < Editor.FIELDS.length
+                        QQC2.ToolTip.text: i18n("Add a condition (all conditions must match)")
                         QQC2.ToolTip.visible: hovered
-                        onClicked: card.edited(Editor.removeCondition(card.draft, card.ruleIndex, cond.modelData.field))
+                        onClicked: card.edited(Editor.addCondition(card.draft, card.ruleIndex))
                     }
                 }
-                QQC2.Label {
-                    // Live while typing, before the value is committed to the draft.
-                    readonly property string err: Editor.conditionError({ type: cond.modelData.type, value: valueField.text })
-                    visible: err !== ""
-                    text: i18n("Invalid regular expression: %1", err)
-                    color: Kirigami.Theme.negativeTextColor
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: Kirigami.Units.smallSpacing
+
+                    Repeater {
+                        model: Editor.conditionList(card.rule)
+                        delegate: ColumnLayout {
+                            id: cond
+                            required property var modelData
+                            Layout.fillWidth: true
+                            spacing: 0
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: Kirigami.Units.smallSpacing
+                                QQC2.ComboBox {
+                                    model: Editor.FIELDS
+                                    currentIndex: Editor.FIELDS.indexOf(cond.modelData.field)
+                                    onActivated: index => card.edited(Editor.changeConditionField(card.draft, card.ruleIndex, cond.modelData.field, Editor.FIELDS[index]))
+                                }
+                                QQC2.ComboBox {
+                                    id: typeBox
+                                    model: Editor.TYPES
+                                    currentIndex: Editor.TYPES.indexOf(cond.modelData.type)
+                                    onActivated: index => card.edited(Editor.setCondition(card.draft, card.ruleIndex, cond.modelData.field,
+                                        { type: Editor.TYPES[index], value: valueField.text, caseSensitive: caseBox.checked }))
+                                }
+                                QQC2.TextField {
+                                    id: valueField
+                                    Layout.fillWidth: true
+                                    text: cond.modelData.value
+                                    placeholderText: i18n("Value")
+                                    onEditingFinished: card.edited(Editor.setCondition(card.draft, card.ruleIndex, cond.modelData.field,
+                                        { type: cond.modelData.type, value: text, caseSensitive: caseBox.checked }))
+                                }
+                                QQC2.ToolButton {
+                                    id: caseBox
+                                    text: "Aa"
+                                    checkable: true
+                                    flat: true
+                                    checked: cond.modelData.caseSensitive
+                                    QQC2.ToolTip.text: i18n("Case sensitive")
+                                    QQC2.ToolTip.visible: hovered
+                                    onToggled: card.edited(Editor.setCondition(card.draft, card.ruleIndex, cond.modelData.field,
+                                        { type: cond.modelData.type, value: valueField.text, caseSensitive: checked }))
+                                }
+                                QQC2.ToolButton {
+                                    icon.name: "list-remove"
+                                    flat: true
+                                    enabled: Editor.conditionList(card.rule).length > 1
+                                    QQC2.ToolTip.text: i18n("Remove condition")
+                                    QQC2.ToolTip.visible: hovered
+                                    onClicked: card.edited(Editor.removeCondition(card.draft, card.ruleIndex, cond.modelData.field))
+                                }
+                            }
+                            QQC2.Label {
+                                // Live while typing, before the value is committed to the draft.
+                                readonly property string err: Editor.conditionError({ type: cond.modelData.type, value: valueField.text })
+                                visible: err !== ""
+                                text: i18n("Invalid regular expression: %1", err)
+                                color: Kirigami.Theme.negativeTextColor
+                            }
+                        }
+                    }
                 }
             }
-        }
 
-        QQC2.Button {
-            icon.name: "list-add"
-            text: i18nc("@action:button", "Add Condition")
-            enabled: Editor.conditionList(card.rule).length < Editor.FIELDS.length
-            onClicked: card.edited(Editor.addCondition(card.draft, card.ruleIndex))
-        }
-
-        Kirigami.Heading { level: 5; text: i18n("Then apply") }
-
-        GridLayout {
-            Layout.fillWidth: true
-            columns: 2
-
-            QQC2.Label { text: i18n("Icon") }
-            RowLayout {
+            QQC2.GroupBox {
                 Layout.fillWidth: true
-                Kirigami.Icon {
-                    Layout.preferredWidth: Kirigami.Units.iconSizes.smallMedium
-                    Layout.preferredHeight: Kirigami.Units.iconSizes.smallMedium
-                    visible: iconField.text !== ""
-                    source: iconField.text.charAt(0) === "/" ? "file://" + encodeURI(iconField.text)
-                          : iconField.text.indexOf("~/") === 0 ? "" : iconField.text
-                }
-                QQC2.TextField {
-                    id: iconField
-                    Layout.fillWidth: true
-                    text: card.rule.actions.icon || ""
-                    placeholderText: i18n("Theme icon name, or a file path starting with / or ~")
-                    onEditingFinished: card.edited(Editor.setAction(card.draft, card.ruleIndex, "icon", text))
-                }
-                QQC2.Button {
-                    text: i18nc("@action:button", "Theme…")
-                    onClicked: themeDialog.open()
-                }
-                QQC2.Button {
-                    text: i18nc("@action:button", "File…")
-                    onClicked: iconFileDialog.open()
-                }
-                QQC2.ToolButton {
-                    icon.name: "edit-clear"
-                    enabled: iconField.text !== ""
-                    onClicked: card.edited(Editor.setAction(card.draft, card.ruleIndex, "icon", ""))
-                }
-            }
+                title: i18n("Styles")
 
-            QQC2.Label { text: i18n("Font color") }
-            ColorRow {
-                key: "fontColor"
-                alpha: false
-            }
+                GridLayout {
+                    anchors.fill: parent
+                    columns: 2
+                    columnSpacing: Kirigami.Units.largeSpacing
+                    rowSpacing: Kirigami.Units.smallSpacing
 
-            QQC2.Label { text: i18n("Background") }
-            ColorRow {
-                key: "background"
-                alpha: true
+                    QQC2.Label { text: i18n("Icon") }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Kirigami.Units.smallSpacing
+                        // Clickable preview: opens the theme icon chooser.
+                        QQC2.ToolButton {
+                            id: iconPreview
+                            flat: true
+                            implicitWidth: Kirigami.Units.iconSizes.medium + Kirigami.Units.smallSpacing * 2
+                            implicitHeight: implicitWidth
+                            QQC2.ToolTip.text: i18n("Choose a theme icon")
+                            QQC2.ToolTip.visible: hovered
+                            onClicked: themeDialog.open()
+                            contentItem: Kirigami.Icon {
+                                source: iconField.text === "" ? "preferences-desktop-icons"
+                                      : iconField.text.charAt(0) === "/" ? "file://" + encodeURI(iconField.text)
+                                      : iconField.text.indexOf("~/") === 0 ? "" : iconField.text
+                                opacity: iconField.text === "" ? 0.4 : 1
+                            }
+                        }
+                        QQC2.TextField {
+                            id: iconField
+                            Layout.fillWidth: true
+                            text: card.rule.actions.icon || ""
+                            placeholderText: i18n("Theme icon name, or a file path starting with / or ~")
+                            onEditingFinished: card.edited(Editor.setAction(card.draft, card.ruleIndex, "icon", text))
+                        }
+                        QQC2.ToolButton {
+                            icon.name: "document-open"
+                            flat: true
+                            QQC2.ToolTip.text: i18n("Choose an image file")
+                            QQC2.ToolTip.visible: hovered
+                            onClicked: iconFileDialog.open()
+                        }
+                        QQC2.ToolButton {
+                            icon.name: "edit-clear"
+                            flat: true
+                            enabled: iconField.text !== ""
+                            onClicked: card.edited(Editor.setAction(card.draft, card.ruleIndex, "icon", ""))
+                        }
+                    }
+
+                    QQC2.Label { text: i18n("Font color") }
+                    ColorRow {
+                        key: "fontColor"
+                        alpha: false
+                    }
+
+                    QQC2.Label { text: i18n("Background") }
+                    ColorRow {
+                        key: "background"
+                        alpha: true
+                    }
+                }
             }
         }
     }
@@ -200,11 +264,23 @@ Kirigami.AbstractCard {
 
         Layout.fillWidth: true
 
+        // Clickable swatch: opens the color dialog.
         Rectangle {
-            Layout.preferredWidth: Kirigami.Units.iconSizes.smallMedium
+            Layout.preferredWidth: Kirigami.Units.iconSizes.medium
             Layout.preferredHeight: Kirigami.Units.iconSizes.smallMedium
-            border.color: Kirigami.Theme.disabledTextColor
+            radius: Kirigami.Units.cornerRadius
+            border.width: swatchArea.containsMouse ? 2 : 1
+            border.color: swatchArea.containsMouse ? Kirigami.Theme.highlightColor : Kirigami.Theme.disabledTextColor
             color: colorRow.current !== "" && Editor.colorError(colorRow.current) === "" ? colorRow.current : "transparent"
+            MouseArea {
+                id: swatchArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: dialog.open()
+            }
+            QQC2.ToolTip.text: i18n("Pick a color")
+            QQC2.ToolTip.visible: swatchArea.containsMouse
         }
         QQC2.TextField {
             id: colorField
@@ -219,12 +295,9 @@ Kirigami.AbstractCard {
             text: err
             color: Kirigami.Theme.negativeTextColor
         }
-        QQC2.Button {
-            text: i18nc("@action:button", "Pick…")
-            onClicked: dialog.open()
-        }
         QQC2.ToolButton {
             icon.name: "edit-clear"
+            flat: true
             enabled: colorRow.current !== ""
             onClicked: card.edited(Editor.setAction(card.draft, card.ruleIndex, colorRow.key, ""))
         }
