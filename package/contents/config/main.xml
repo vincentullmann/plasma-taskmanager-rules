@@ -4,6 +4,10 @@
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
   <!-- Rules live in the shared ~/.config/plasma-taskmanager-rules/rules.json; only appearance is stored here. -->
   <group name="General">
+    <entry name="launchers" type="StringList">
+      <label>Pinned launchers of this panel (launcher URLs)</label>
+      <default></default>
+    </entry>
     <entry name="iconSize" type="Int">
       <label>Icon size in pixels</label>
       <default>22</default>

@@ -11,8 +11,10 @@ qt_add_qml_module(tmrules_io
     SOURCES
         iohelper.h
         iohelper.cpp
+        launcherprogress.h
+        launcherprogress.cpp
 )
-target_link_libraries(tmrules_io PUBLIC Qt6::Core Qt6::Qml)
+target_link_libraries(tmrules_io PUBLIC Qt6::Core Qt6::Qml Qt6::DBus)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)

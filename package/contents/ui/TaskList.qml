@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import "../code/tasks.js" as Tasks
 
 ListView {
     id: list
@@ -8,6 +9,8 @@ ListView {
     required property var tasksModel
     required property var store
     property bool vertical: false
+    property var audio: null
+    property var progress: null
 
     // Appearance (General settings page).
     property int iconSize: Kirigami.Units.iconSizes.medium
@@ -20,6 +23,20 @@ ListView {
     readonly property real maxButtonWidth: Kirigami.Units.gridUnit * 12
     readonly property real buttonHeight: iconSize + padding * 2
     readonly property real totalGaps: Math.max(0, count - 1) * gap
+
+    // Size of one button along the list axis, gap included.
+    readonly property real cellSize: vertical ? buttonHeight + gap
+        : Math.min(maxButtonWidth, (width - totalGaps) / Math.max(1, count)) + gap
+
+    // Where a button ends up when dragged `translation` px along the axis from `from`.
+    function dropTarget(from, translation) {
+        return Tasks.dropIndex(from * cellSize + cellSize / 2 + translation, cellSize, count)
+    }
+
+    function commitDrag(from, translation) {
+        const to = dropTarget(from, translation)
+        if (to !== from) tasksModel.move(from, to)
+    }
 
     Layout.minimumWidth: vertical ? Kirigami.Units.gridUnit * 4 : 0
     Layout.preferredWidth: vertical ? Kirigami.Units.gridUnit * 8 : count * maxButtonWidth + totalGaps
@@ -37,6 +54,10 @@ ListView {
     delegate: TaskButton {
         tasksModel: list.tasksModel
         store: list.store
+        audio: list.audio
+        progress: list.progress
+        vertical: list.vertical
+        onDragFinished: translation => list.commitDrag(index, translation)
         iconSize: list.iconSize
         fontSize: list.fontSize
         borderRadius: list.borderRadius

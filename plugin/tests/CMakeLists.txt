@@ -7,7 +7,7 @@ add_test(NAME tst_iohelper COMMAND tst_iohelper)
 qt_add_executable(qml_runner qml_runner.cpp)
 target_link_libraries(qml_runner PRIVATE Qt6::Core Qt6::Gui Qt6::Qml KF6::I18n)
 file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/home)
-foreach(t configstore configrules)
+foreach(t configstore configrules taskbutton)
     add_test(NAME tst_${t}
              COMMAND qml_runner ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/qml/tst_${t}.qml)
     # HOME points at the build dir so tests never touch the real ~/.config.
