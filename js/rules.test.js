@@ -234,3 +234,9 @@ test('serialize: pretty JSON with trailing newline that parses back', () => {
   assert.ok(text.endsWith('\n'));
   assert.deepEqual(JSON.parse(text), c);
 });
+
+test('iconSource: theme name passes through, path becomes a file URL', () => {
+  assert.equal(R.iconSource({ name: 'firefox' }), 'firefox');
+  assert.equal(R.iconSource({ path: '/opt/a b.svg' }), 'file:///opt/a%20b.svg');
+  assert.equal(R.iconSource(undefined), '');
+});

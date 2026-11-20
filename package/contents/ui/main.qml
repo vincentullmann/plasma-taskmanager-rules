@@ -36,6 +36,7 @@ PlasmoidItem {
     }
 
     fullRepresentation: TaskList {
+        store: store
         tasksModel: tasksModel
         vertical: root.vertical
     }

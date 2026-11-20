@@ -6,6 +6,7 @@ ListView {
     id: list
 
     required property var tasksModel
+    required property var store
     property bool vertical: false
 
     readonly property real maxButtonWidth: Kirigami.Units.gridUnit * 12
@@ -26,6 +27,7 @@ ListView {
 
     delegate: TaskButton {
         tasksModel: list.tasksModel
+        store: list.store
         width: list.vertical ? list.width : Math.min(list.maxButtonWidth, list.width / Math.max(1, list.count))
         height: list.vertical ? list.buttonHeight : list.height
     }

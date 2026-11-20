@@ -7,6 +7,7 @@ Item {
     id: button
 
     required property var tasksModel
+    required property var store
     required property int index
     required property var model
 
@@ -14,8 +15,27 @@ Item {
     readonly property bool minimized: model.IsMinimized === true
     readonly property bool attention: model.IsDemandingAttention === true
 
+    // Rule actions for this window. Re-evaluates when the title, app, pid, or the rule config changes.
+    readonly property var ruleActions: store.evaluate({
+        title: model.display,
+        appId: model.AppId,
+        name: model.AppName,
+        exe: store.exePath(model.AppPid)
+    })
+    readonly property string iconSource: ruleActions.icon ? store.iconSource(ruleActions.icon) : ""
+    readonly property color labelColor: ruleActions.fontColor !== undefined ? ruleActions.fontColor : Kirigami.Theme.textColor
+
     function modelIndex() {
         return tasksModel.makeModelIndex(index)
+    }
+
+    // Rule `background`: fills the whole button, alpha included. Under the state overlay.
+    Rectangle {
+        anchors.fill: parent
+        anchors.margins: 1
+        radius: Kirigami.Units.cornerRadius
+        visible: button.ruleActions.background !== undefined
+        color: button.ruleActions.background !== undefined ? button.ruleActions.background : "transparent"
     }
 
     Rectangle {
@@ -50,7 +70,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             width: Kirigami.Units.iconSizes.medium
             height: width
-            source: button.model.decoration
+            source: button.iconSource !== "" ? button.iconSource : button.model.decoration
         }
 
         Text {
@@ -60,7 +80,7 @@ Item {
             text: button.model.display
             elide: Text.ElideRight
             font: Kirigami.Theme.defaultFont
-            color: Kirigami.Theme.textColor
+            color: button.labelColor
         }
     }
 

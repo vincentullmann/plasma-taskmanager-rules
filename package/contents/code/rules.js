@@ -169,12 +169,19 @@ function applyText(prev, text, opts) {
     return { config: p.config, engine: c.engine, error: "" };
 }
 
+// QML image source for a resolved icon ({name} or {path}); "" when there is none.
+function iconSource(icon) {
+    if (!icon) return "";
+    if (icon.path !== undefined) return "file://" + encodeURI(icon.path);
+    return icon.name || "";
+}
+
 function serialize(config) {
     return JSON.stringify(config, null, 2) + "\n";
 }
 
 if (typeof module !== "undefined" && module.exports) {
     module.exports = { defaultConfig: defaultConfig, validate: validate, compile: compile, evaluate: evaluate,
-                       resolveIcon: resolveIcon, parse: parse, initialState: initialState, applyText: applyText, serialize: serialize,
+                       resolveIcon: resolveIcon, parse: parse, initialState: initialState, iconSource: iconSource, applyText: applyText, serialize: serialize,
                        CONDITION_FIELDS: CONDITION_FIELDS, MATCHER_TYPES: MATCHER_TYPES };
 }

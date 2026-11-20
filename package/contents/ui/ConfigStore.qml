@@ -36,8 +36,17 @@ QtObject {
         return ""
     }
 
+    // Merged rule actions for one window. Reads `engine`, so callers' bindings re-run on config change.
     function evaluate(window) {
         return Rules.evaluate(engine, window)
+    }
+
+    function exePath(pid) {
+        return io.exePath(pid)
+    }
+
+    function iconSource(icon) {
+        return Rules.iconSource(icon)
     }
 
     property IoHelper io: IoHelper {
