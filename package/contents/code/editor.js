@@ -26,6 +26,16 @@ function addRule(config) {
     return c;
 }
 
+// New rule that matches this window: app id, else app name, else title (exact).
+function addRuleFor(config, window) {
+    var c = _clone(config);
+    var field = window.appId ? "appId" : window.name ? "name" : "title";
+    var cond = {};
+    cond[field] = { exact: String(window[field] || "") };
+    c.rules.push({ enabled: true, conditions: cond, actions: {} });
+    return c;
+}
+
 function removeRule(config, index) {
     var c = _clone(config);
     if (index >= 0 && index < c.rules.length) c.rules.splice(index, 1);
@@ -111,7 +121,7 @@ function colorError(value) {
 }
 
 if (typeof module !== "undefined" && module.exports) {
-    module.exports = { FIELDS: FIELDS, TYPES: TYPES, addRule: addRule, removeRule: removeRule, moveRule: moveRule,
+    module.exports = { FIELDS: FIELDS, TYPES: TYPES, addRule: addRule, addRuleFor: addRuleFor, removeRule: removeRule, moveRule: moveRule,
                        setRuleProp: setRuleProp, conditionList: conditionList, addCondition: addCondition,
                        setCondition: setCondition, changeConditionField: changeConditionField,
                        removeCondition: removeCondition, setAction: setAction, regexError: regexError,

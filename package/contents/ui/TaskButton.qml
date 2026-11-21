@@ -20,9 +20,10 @@ Item {
     // Emitted when a drag ends; `translation` is how far the button was dragged along the list axis.
     property bool vertical: false
     property int location: 0              // Plasmoid.location (0 = floating)
-    readonly property bool menuOpen: menu.visible
     property bool tooltips: true          // off in headless tests (Plasma tooltips open real windows)
+    readonly property bool menuOpen: menu.visible
     signal dragFinished(real translation)
+    signal ruleRequested()                // "Add rule" / "Edit rule": the config dialog should open
 
     // Live drag. Positions are pointer coordinates along the list axis, in the list's content item
     // (stable even though this delegate moves while it is dragged).
@@ -140,6 +141,18 @@ Item {
     readonly property string iconSource: ruleActions.icon ? store.iconSource(ruleActions.icon) : ""
     readonly property color labelColor: ruleActions.fontColor !== undefined ? ruleActions.fontColor : Kirigami.Theme.textColor
 
+    readonly property var windowInfo: ({
+        title: model.display, appId: model.AppId, name: model.AppName, exe: pid > 0 ? store.exePath(pid) : ""
+    })
+    // Re-evaluates when the rules change (ruleIndexFor reads store.config), like ruleActions.
+    readonly property bool hasRule: store.ruleIndexFor(windowInfo) >= 0
+
+    // Creates a matching rule first when there is none, then asks for the config dialog.
+    function addOrEditRule() {
+        if (!hasRule) store.addRuleFor(windowInfo)
+        ruleRequested()
+    }
+
     function modelIndex() {
         return tasksModel.makeModelIndex(index)
     }
@@ -254,7 +267,7 @@ Item {
         onCanceled: button.endDrag()
         onClicked: mouseEvent => {
             if (button.wasDragged) return
-            if (mouseEvent.button === Qt.RightButton) menu.popup()
+            if (mouseEvent.button === Qt.RightButton) menu.popup(button, mouseEvent.x, mouseEvent.y)
             else button.activate()
         }
     }
@@ -267,13 +280,21 @@ Item {
         onLoaded: item.button = button
     }
 
+    // A real popup window: not clipped to the panel, positioned by the compositor, no panel-sized scrollbar.
     QQC2.Menu {
         id: menu
+        popupType: QQC2.Popup.Window
         QQC2.MenuItem {
             text: button.pinned ? i18nc("@action:inmenu", "Unpin") : i18nc("@action:inmenu", "Pin")
             icon.name: button.pinned ? "window-unpin" : "window-pin"
             onTriggered: button.togglePin()
         }
+        QQC2.MenuItem {
+            text: button.hasRule ? i18nc("@action:inmenu", "Edit Rule…") : i18nc("@action:inmenu", "Add Rule…")
+            icon.name: button.hasRule ? "document-edit" : "list-add"
+            onTriggered: button.addOrEditRule()
+        }
+        QQC2.MenuSeparator {}
         QQC2.MenuItem {
             text: i18nc("@action:inmenu", "Close")
             icon.name: "window-close"

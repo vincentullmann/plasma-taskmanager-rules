@@ -1,6 +1,7 @@
 import QtQml
 import com.github.vincentullmann.taskmanagerrules.io
 import "../code/rules.js" as Rules
+import "../code/editor.js" as Editor
 
 // Shared rules file -> compiled engine. One per TM instance; every instance watches the same file.
 QtObject {
@@ -39,6 +40,17 @@ QtObject {
     // Merged rule actions for one window. Reads `engine`, so callers' bindings re-run on config change.
     function evaluate(window) {
         return Rules.evaluate(engine, window)
+    }
+
+    // Index of the first rule matching this window, or -1.
+    function ruleIndexFor(window) {
+        const m = Rules.matchingRules(config, window)
+        return m.length ? m[0] : -1
+    }
+
+    // Appends a rule matching this window; returns "" or the error text.
+    function addRuleFor(window) {
+        return save(Editor.addRuleFor(config, window))
     }
 
     function exePath(pid) {

@@ -19,7 +19,10 @@ Item {
         function requestClose(i) { root.calls.push("close") }
     }
     property var store: QtObject {
+        property var added: []
         function evaluate(w) { return ({}) }
+        function ruleIndexFor(w) { return w.appId === "ruled" ? 0 : -1 }
+        function addRuleFor(w) { added.push(w.appId); return "" }
         function exePath(pid) { return "" }
         function iconSource(i) { return i }
     }
@@ -136,6 +139,19 @@ Item {
         b.moveRequested.connect(t => moves.push(t))
         b.beginDrag(10); b.moveDrag(50)
         if (moves.join() !== "1") return fail("vertical live move: " + moves)
+
+        // rule action: adds a matching rule only when none exists, then asks for the config dialog
+        let asked = 0
+        b = make({ display: "w", AppPid: 5, AppId: "new" })
+        b.ruleRequested.connect(() => asked++)
+        if (b.hasRule) return fail("no rule yet")
+        b.addOrEditRule()
+        if (store.added.join() !== "new" || asked !== 1) return fail("add rule: " + store.added + " " + asked)
+        b = make({ display: "w", AppPid: 5, AppId: "ruled" })
+        b.ruleRequested.connect(() => asked++)
+        if (!b.hasRule) return fail("rule exists")
+        b.addOrEditRule()
+        if (store.added.length !== 1 || asked !== 2) return fail("edit must not add: " + store.added)
 
         console.log("PASS")
         Qt.exit(0)

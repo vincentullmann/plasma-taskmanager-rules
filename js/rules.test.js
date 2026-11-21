@@ -240,3 +240,9 @@ test('iconSource: theme name passes through, path becomes a file URL', () => {
   assert.equal(R.iconSource({ path: '/opt/a b.svg' }), 'file:///opt/a%20b.svg');
   assert.equal(R.iconSource(undefined), '');
 });
+
+test('matchingRules: indexes of rules matching the window, disabled included', () => {
+  const c = cfg(rule({ appId: { exact: 'app' } }), rule({ appId: { exact: 'other' } }), rule({ name: { exact: 'App' } }, {}, { enabled: false }));
+  assert.deepEqual(R.matchingRules(c, win()), [0, 2]);
+  assert.deepEqual(R.matchingRules(c, win({ appId: 'zzz', name: 'Q' })), []);
+});

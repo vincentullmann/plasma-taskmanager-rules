@@ -108,3 +108,13 @@ test('every operation keeps a valid config valid', () => {
   c = E.setAction(c, 0, 'background', '#33ff8800');
   assert.equal(R.validate(c).ok, true, JSON.stringify(R.validate(c).errors));
 });
+
+test('addRuleFor matches the window by app id, else name, else title', () => {
+  const w = { appId: 'app', name: 'App', title: 'T' };
+  let c = E.addRuleFor(base(), w);
+  assert.deepEqual(c.rules[3].conditions, { appId: { exact: 'app' } });
+  assert.ok(R.validate(c).ok);
+  assert.deepEqual(E.addRuleFor(base(), { name: 'App', title: 'T' }).rules[3].conditions, { name: { exact: 'App' } });
+  assert.deepEqual(E.addRuleFor(base(), { title: 'T' }).rules[3].conditions, { title: { exact: 'T' } });
+  assert.equal(base().rules.length, 3);
+});

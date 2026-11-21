@@ -8,6 +8,7 @@ ListView {
 
     required property var tasksModel
     required property var store
+    signal ruleRequested()
     property bool vertical: false
     property int location: 0          // Plasmoid.location, places the tooltip
     property bool tooltips: true
@@ -63,6 +64,7 @@ ListView {
         tooltips: list.tooltips
         cellSize: list.cellSize
         count: list.count
+        onRuleRequested: list.ruleRequested()
         onMoveRequested: target => list.moveTask(index, target)
         iconSize: list.iconSize
         fontSize: list.fontSize

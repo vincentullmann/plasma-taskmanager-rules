@@ -145,6 +145,22 @@ function evaluate(engine, window) {
     return out;
 }
 
+// Indexes of the rules whose conditions all match the window (disabled rules included).
+function matchingRules(config, window) {
+    var out = [];
+    if (!validate(config).ok) return out;
+    config.rules.forEach(function (rule, i) {
+        var ok = Object.keys(rule.conditions).every(function (field) {
+            var m = rule.conditions[field];
+            var type = MATCHER_TYPES.filter(function (t) { return m[t] !== undefined; })[0];
+            var v = window[field];
+            return _compileMatcher(type, m[type], m.caseSensitive === true)(v === undefined || v === null ? "" : String(v));
+        });
+        if (ok) out.push(i);
+    });
+    return out;
+}
+
 // Parse JSON text and validate. Returns { ok, config?, errors }.
 function parse(text) {
     var config;
@@ -181,7 +197,7 @@ function serialize(config) {
 }
 
 if (typeof module !== "undefined" && module.exports) {
-    module.exports = { defaultConfig: defaultConfig, validate: validate, compile: compile, evaluate: evaluate,
+    module.exports = { defaultConfig: defaultConfig, validate: validate, compile: compile, evaluate: evaluate, matchingRules: matchingRules,
                        resolveIcon: resolveIcon, parse: parse, initialState: initialState, iconSource: iconSource, applyText: applyText, serialize: serialize,
                        CONDITION_FIELDS: CONDITION_FIELDS, MATCHER_TYPES: MATCHER_TYPES };
 }
