@@ -4,6 +4,7 @@ import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 import org.kde.kcmutils as KCM
 import org.kde.kquickcontrols as KQC
+import com.github.vincentullmann.taskmanagerrules.io
 
 // Appearance settings, stored per widget instance in the plasmoid config.
 KCM.SimpleKCM {
@@ -23,6 +24,25 @@ KCM.SimpleKCM {
     property int cfg_paddingDefault
     property int cfg_gapDefault
     property int cfg_iconGapDefault
+
+    IoHelper { id: io }
+
+    readonly property string broadcastPath: "~/.config/plasma-taskmanager-rules/appearance.json"
+
+    // Other instances watch this file and copy these values into their own config.
+    function applyToAll() {
+        const settings = {
+            iconSize: iconSize.value,
+            fontSize: fontSize.value,
+            borderRadius: borderRadius.value,
+            backgroundColor: String(backgroundColor.color),
+            padding: padding.value,
+            gap: gap.value,
+            iconGap: iconGap.value
+        }
+        const ok = io.writeFile(broadcastPath, JSON.stringify({ stamp: Date.now(), settings: settings }, null, 2) + "\n")
+        applyStatus.text = ok ? i18n("Applied to all instances.") : i18n("Could not write %1", broadcastPath)
+    }
 
     Kirigami.FormLayout {
         Kirigami.Separator {
@@ -79,6 +99,21 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("Gap:")
             from: 0; to: 64
             textFromValue: (v) => i18n("%1 px", v)
+        }
+
+        Kirigami.Separator {
+            Kirigami.FormData.isSection: true
+        }
+        QQC2.Button {
+            Kirigami.FormData.label: i18n("All instances:")
+            icon.name: "edit-copy"
+            text: i18n("Apply these settings to all instances")
+            onClicked: page.applyToAll()
+        }
+        QQC2.Label {
+            id: applyStatus
+            visible: text !== ""
+            opacity: 0.7
         }
     }
 }
