@@ -159,16 +159,14 @@ Item {
 
     // Default background from the General settings.
     Rectangle {
-        anchors.fill: parent
-        anchors.margins: 1
+        anchors { fill: parent; leftMargin: 1; rightMargin: 1 }
         radius: button.borderRadius
         color: button.backgroundColor
     }
 
     // Rule `background`: fills the whole button, alpha included. Under the state overlay.
     Rectangle {
-        anchors.fill: parent
-        anchors.margins: 1
+        anchors { fill: parent; leftMargin: 1; rightMargin: 1 }
         radius: button.borderRadius
         visible: button.ruleActions.background !== undefined
         color: button.ruleActions.background !== undefined ? button.ruleActions.background : "transparent"
@@ -176,8 +174,7 @@ Item {
 
     Rectangle {
         id: background
-        anchors.fill: parent
-        anchors.margins: 1
+        anchors { fill: parent; leftMargin: 1; rightMargin: 1 }
         radius: button.borderRadius
         color: button.attention ? Kirigami.Theme.neutralTextColor
              : button.active ? Kirigami.Theme.highlightColor
@@ -191,7 +188,7 @@ Item {
     // Active marker.
     Rectangle {
         visible: button.active
-        anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 1 }
+        anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: 1; rightMargin: 1 }
         height: 2
         color: Kirigami.Theme.highlightColor
     }
@@ -241,7 +238,7 @@ Item {
     // Progress bar (downloads and other jobs).
     Rectangle {
         visible: button.progressValue >= 0
-        anchors { left: parent.left; bottom: parent.bottom; margins: 1 }
+        anchors { left: parent.left; bottom: parent.bottom; leftMargin: 1 }
         width: (parent.width - 2) * Math.max(0, button.progressValue)
         height: 3
         color: Kirigami.Theme.highlightColor

@@ -10,6 +10,9 @@ PlasmoidItem {
     // No compact/popup form: the task list always fills the panel slot.
     preferredRepresentation: fullRepresentation
 
+    // Like the stock task manager: ignore the panel's applet margins and fill the full panel thickness.
+    Plasmoid.constraintHints: Plasmoid.CanFillArea
+
     readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
 
     ConfigStore {
