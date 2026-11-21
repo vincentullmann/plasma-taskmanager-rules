@@ -44,10 +44,11 @@ Item {
             store: root.store
             audio: root.audio
             progress: root.progress
+            tooltips: false
             width: 200; height: 30
         }
     }
-    Component { id: listComp; TaskList { tasksModel: ListModel { ListElement { display: "a" } ListElement { display: "b" } ListElement { display: "c" } ListElement { display: "d" } } store: root.store } }
+    Component { id: listComp; TaskList { tasksModel: ListModel { ListElement { display: "a" } ListElement { display: "b" } ListElement { display: "c" } ListElement { display: "d" } } store: root.store; tooltips: false } }
 
     function make(roles) { return buttonComp.createObject(root, { roles: roles }) }
 
@@ -105,6 +106,23 @@ Item {
         b = make({ display: "w", AppPid: 5, AppId: "w", HasLauncher: false, LauncherUrlWithoutIcon: "file:///w.desktop" })
         b.togglePin()
         if (calls.pop() !== "add:file:///w.desktop") return fail("pin")
+
+        // dragging: small movement is a click, a long one reports the distance on release
+        b = make({ display: "w", AppPid: 5, AppId: "w" })
+        let dragged = []
+        b.dragFinished.connect(d => dragged.push(d))
+        b.beginDrag(10)
+        b.moveDrag(13)
+        if (b.dragging || b.dragDelta !== 0) return fail("tiny movement must not drag")
+        b.endDrag()
+        if (dragged.length !== 0 || b.wasDragged) return fail("tiny movement is a click")
+        b.beginDrag(10)
+        b.moveDrag(160)
+        if (!b.dragging || b.dragDelta !== 150) return fail("drag delta: " + b.dragDelta)
+        b.moveDrag(120)
+        if (b.dragDelta !== 110) return fail("drag follows the pointer: " + b.dragDelta)
+        b.endDrag()
+        if (dragged.length !== 1 || dragged[0] !== 110 || !b.wasDragged || b.dragging || b.dragDelta !== 0) return fail("drag end: " + dragged)
 
         // drag target: horizontal list, 4 buttons across 400px (100px each, no gap)
         const l = listComp.createObject(root, { width: 400, height: 30 })

@@ -55,6 +55,7 @@ PlasmoidItem {
         audio: audioStreams
         progress: launcherProgress
         vertical: root.vertical
+        location: Plasmoid.location
         iconSize: Plasmoid.configuration.iconSize
         fontSize: Plasmoid.configuration.fontSize
         borderRadius: Plasmoid.configuration.borderRadius

@@ -9,6 +9,8 @@ ListView {
     required property var tasksModel
     required property var store
     property bool vertical: false
+    property int location: 0          // Plasmoid.location, places the tooltip
+    property bool tooltips: true
     property var audio: null
     property var progress: null
 
@@ -57,6 +59,8 @@ ListView {
         audio: list.audio
         progress: list.progress
         vertical: list.vertical
+        location: list.location
+        tooltips: list.tooltips
         onDragFinished: translation => list.commitDrag(index, translation)
         iconSize: list.iconSize
         fontSize: list.fontSize

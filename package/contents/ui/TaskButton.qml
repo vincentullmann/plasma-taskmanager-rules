@@ -19,7 +19,38 @@ Item {
 
     // Emitted when a drag ends; `translation` is how far the button was dragged along the list axis.
     property bool vertical: false
+    property int location: 0              // Plasmoid.location (0 = floating)
+    readonly property bool menuOpen: menu.visible
+    property bool tooltips: true          // off in headless tests (Plasma tooltips open real windows)
     signal dragFinished(real translation)
+
+    // Drag state, driven by the click area (a DragHandler next to a MouseArea never got the drag).
+    property bool dragging: false
+    property bool wasDragged: false       // the release that ended a drag must not count as a click
+    property real dragDelta: 0
+    property real dragStart: 0
+    property bool dragArmed: false
+
+    function beginDrag(pos) {
+        dragStart = pos
+        dragArmed = true
+        wasDragged = false
+    }
+    function moveDrag(pos) {
+        if (!dragArmed) return
+        if (!dragging && Math.abs(pos - dragStart) < Qt.styleHints.startDragDistance) return
+        dragging = true
+        dragDelta = pos - dragStart
+    }
+    function endDrag() {
+        dragArmed = false
+        if (!dragging) return
+        const d = dragDelta
+        dragging = false
+        dragDelta = 0
+        wasDragged = true
+        dragFinished(d)
+    }
 
     property int iconSize: Kirigami.Units.iconSizes.medium
     property int fontSize: 0
@@ -121,8 +152,8 @@ Item {
         spacing: button.padding
         opacity: (button.minimized || button.launcher) ? 0.5 : 1
         transform: Translate {
-            x: button.vertical ? 0 : drag.translation.x
-            y: button.vertical ? drag.translation.y : 0
+            x: button.vertical ? 0 : button.dragDelta
+            y: button.vertical ? button.dragDelta : 0
         }
 
         Kirigami.Icon {
@@ -171,13 +202,6 @@ Item {
         color: Kirigami.Theme.highlightColor
     }
 
-    DragHandler {
-        id: drag
-        target: null
-        xAxis.enabled: !button.vertical
-        yAxis.enabled: button.vertical
-        onActiveChanged: if (!active) button.dragFinished(button.vertical ? translation.y : translation.x)
-    }
 
     MouseArea {
         id: mouse
@@ -185,16 +209,26 @@ Item {
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.RightButton
 
+        preventStealing: true
+        onPressed: mouseEvent => {
+            if (mouseEvent.button === Qt.LeftButton) button.beginDrag(button.vertical ? mouseEvent.y : mouseEvent.x)
+        }
+        onPositionChanged: mouseEvent => button.moveDrag(button.vertical ? mouseEvent.y : mouseEvent.x)
+        onReleased: button.endDrag()
+        onCanceled: button.endDrag()
         onClicked: mouseEvent => {
+            if (button.wasDragged) return
             if (mouseEvent.button === Qt.RightButton) menu.popup()
             else button.activate()
         }
     }
 
-    QQC2.ToolTip {
-        visible: mouse.containsMouse && !drag.active && !menu.visible
-        delay: Kirigami.Units.toolTipDelay
-        text: button.tooltipText
+    // Plasma's own tooltip: a real tooltip window that never sits under the pointer, so it doesn't flicker.
+    Loader {
+        anchors.fill: parent
+        active: button.tooltips
+        source: "TaskToolTip.qml"
+        onLoaded: item.button = button
     }
 
     QQC2.Menu {
