@@ -96,6 +96,17 @@ Item {
     readonly property int pid: model.AppPid > 0 ? model.AppPid : 0
 
     readonly property string tooltipText: model.display
+    readonly property string tooltipLabel: model.AppName ? model.AppName : model.display
+    readonly property string exePath: pid > 0 ? store.exePath(pid) : ""
+    // Header is the label (app name); under it the title (light grey), then app id and exe (grey, small).
+    readonly property string tooltipSubText: {
+        const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        const lines = []
+        if (model.AppName && tooltipText) lines.push('<span style="color:#d0d0d0">' + esc(tooltipText) + '</span>')
+        if (model.AppId) lines.push('<small style="color:#909090">app_id: ' + esc(model.AppId) + '</small>')
+        if (exePath !== "") lines.push('<small style="color:#909090">exe: ' + esc(exePath) + '</small>')
+        return lines.join("<br>")
+    }
     readonly property var audioBadge: Tasks.audioBadge(audio ? audio.state(pid) : { hasAudio: false })
     readonly property real progressValue: {
         if (!progress) return -1
