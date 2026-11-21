@@ -15,12 +15,14 @@ KCM.SimpleKCM {
     property alias cfg_backgroundColor: backgroundColor.color
     property alias cfg_padding: padding.value
     property alias cfg_gap: gap.value
+    property alias cfg_iconGap: iconGap.value
     property int cfg_iconSizeDefault
     property int cfg_fontSizeDefault
     property int cfg_borderRadiusDefault
     property color cfg_backgroundColorDefault
     property int cfg_paddingDefault
     property int cfg_gapDefault
+    property int cfg_iconGapDefault
 
     Kirigami.FormLayout {
         Kirigami.Separator {
@@ -63,6 +65,12 @@ KCM.SimpleKCM {
         QQC2.SpinBox {
             id: padding
             Kirigami.FormData.label: i18n("Padding:")
+            from: 0; to: 64
+            textFromValue: (v) => i18n("%1 px", v)
+        }
+        QQC2.SpinBox {
+            id: iconGap
+            Kirigami.FormData.label: i18n("Icon–label gap:")
             from: 0; to: 64
             textFromValue: (v) => i18n("%1 px", v)
         }

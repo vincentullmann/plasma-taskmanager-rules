@@ -58,6 +58,7 @@ Item {
     property int borderRadius: Kirigami.Units.cornerRadius
     property color backgroundColor: "transparent"
     property int padding: Kirigami.Units.smallSpacing
+    property int iconGap: Kirigami.Units.smallSpacing
     readonly property font labelFont: {
         const f = Kirigami.Theme.defaultFont
         if (fontSize > 0) f.pointSize = fontSize
@@ -173,7 +174,7 @@ Item {
 
     Row {
         anchors { fill: parent; leftMargin: button.padding; rightMargin: button.padding }
-        spacing: button.padding
+        spacing: button.iconGap
         opacity: (button.minimized || button.launcher) ? 0.5 : 1
 
         Kirigami.Icon {

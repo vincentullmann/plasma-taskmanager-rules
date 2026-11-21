@@ -62,5 +62,6 @@ PlasmoidItem {
         backgroundColor: Plasmoid.configuration.backgroundColor
         padding: Plasmoid.configuration.padding
         gap: Plasmoid.configuration.gap
+        iconGap: Plasmoid.configuration.iconGap
     }
 }

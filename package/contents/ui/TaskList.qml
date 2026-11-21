@@ -21,6 +21,7 @@ ListView {
     property color backgroundColor: "transparent"
     property int padding: Kirigami.Units.smallSpacing
     property int gap: 0
+    property int iconGap: Kirigami.Units.smallSpacing
 
     readonly property real maxButtonWidth: Kirigami.Units.gridUnit * 12
     readonly property real buttonHeight: iconSize + padding * 2
@@ -68,6 +69,7 @@ ListView {
         borderRadius: list.borderRadius
         backgroundColor: list.backgroundColor
         padding: list.padding
+        iconGap: list.iconGap
         width: list.vertical ? list.width : Math.min(list.maxButtonWidth, (list.width - list.totalGaps) / Math.max(1, list.count))
         height: list.vertical ? list.buttonHeight : list.height
     }
