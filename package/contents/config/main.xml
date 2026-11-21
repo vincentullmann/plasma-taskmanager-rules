@@ -48,5 +48,23 @@
       <min>0</min>
       <max>64</max>
     </entry>
+    <entry name="indicatorHeight" type="Int">
+      <label>Height of the line at the bottom of the active window in pixels, 0 = off</label>
+      <default>2</default>
+      <min>0</min>
+      <max>16</max>
+    </entry>
+    <entry name="indicatorSaturation" type="Double">
+      <label>Saturation multiplier of the active-window line, relative to the button background</label>
+      <default>0.75</default>
+      <min>0</min>
+      <max>2</max>
+    </entry>
+    <entry name="indicatorValue" type="Double">
+      <label>Value (brightness) multiplier of the active-window line, relative to the button background</label>
+      <default>1.25</default>
+      <min>0</min>
+      <max>2</max>
+    </entry>
   </group>
 </kcfg>

@@ -60,6 +60,9 @@ Item {
     property color backgroundColor: "transparent"
     property int padding: Kirigami.Units.smallSpacing
     property int iconGap: Kirigami.Units.smallSpacing
+    property real indicatorSaturation: 0.75   // multipliers applied to the base colour
+    property real indicatorValue: 1.25
+    property int indicatorHeight: 2       // bottom line on the active window; 0 = off
     readonly property font labelFont: {
         const f = Kirigami.Theme.defaultFont
         if (fontSize > 0) f.pointSize = fontSize
@@ -179,18 +182,32 @@ Item {
         color: button.attention ? Kirigami.Theme.neutralTextColor
              : button.active ? Kirigami.Theme.highlightColor
              : Kirigami.Theme.textColor
-        opacity: button.attention ? 0.35
-               : button.active ? 0.30
-               : mouse.containsMouse ? 0.12 : 0
+        opacity: button.attention ? (hover.hovered ? 0.45 : 0.35)
+               : button.active ? (hover.hovered ? 0.40 : 0.30)
+               : hover.hovered ? 0.15
+               : 0
         Behavior on opacity { NumberAnimation { duration: Kirigami.Units.shortDuration } }
     }
 
-    // Active marker.
+    // Hover highlight via a handler: the tooltip area above the mouse area swallows hover events.
+    HoverHandler { id: hover }
+
+    // Active-window marker: the rule background (else the default background) with saturation and
+    // value scaled by the General settings multipliers, opaque.
+    readonly property color indicatorBase: ruleActions.background !== undefined ? ruleActions.background : backgroundColor
+    readonly property color indicatorColor: {
+        // Rule colours are strings; a typed `color` property converts them so hsv* work.
+        const base = indicatorBase
+        return Qt.hsva(Math.max(0, base.hsvHue),
+                       Math.min(1, base.hsvSaturation * indicatorSaturation),
+                       Math.min(1, base.hsvValue * indicatorValue), 1)
+    }
     Rectangle {
-        visible: button.active
+        objectName: "indicator"
+        visible: button.indicatorHeight > 0 && button.active
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: 1; rightMargin: 1 }
-        height: 2
-        color: Kirigami.Theme.highlightColor
+        height: button.indicatorHeight
+        color: button.indicatorColor
     }
 
     Row {

@@ -17,6 +17,9 @@ KCM.SimpleKCM {
     property alias cfg_padding: padding.value
     property alias cfg_gap: gap.value
     property alias cfg_iconGap: iconGap.value
+    property alias cfg_indicatorHeight: indicatorHeight.value
+    property alias cfg_indicatorSaturation: indicatorSaturation.value
+    property alias cfg_indicatorValue: indicatorValue.value
     property int cfg_iconSizeDefault
     property int cfg_fontSizeDefault
     property int cfg_borderRadiusDefault
@@ -24,6 +27,9 @@ KCM.SimpleKCM {
     property int cfg_paddingDefault
     property int cfg_gapDefault
     property int cfg_iconGapDefault
+    property int cfg_indicatorHeightDefault
+    property real cfg_indicatorSaturationDefault
+    property real cfg_indicatorValueDefault
 
     IoHelper { id: io }
 
@@ -38,7 +44,10 @@ KCM.SimpleKCM {
             backgroundColor: String(backgroundColor.color),
             padding: padding.value,
             gap: gap.value,
-            iconGap: iconGap.value
+            iconGap: iconGap.value,
+            indicatorHeight: indicatorHeight.value,
+            indicatorSaturation: indicatorSaturation.value,
+            indicatorValue: indicatorValue.value
         }
         const ok = io.writeFile(broadcastPath, JSON.stringify({ stamp: Date.now(), settings: settings }, null, 2) + "\n")
         applyStatus.text = ok ? i18n("Applied to all instances.") : i18n("Could not write %1", broadcastPath)
@@ -70,6 +79,22 @@ KCM.SimpleKCM {
             id: backgroundColor
             Kirigami.FormData.label: i18n("Background:")
             showAlphaChannel: true
+        }
+        QQC2.SpinBox {
+            id: indicatorHeight
+            Kirigami.FormData.label: i18n("Active-window line:")
+            from: 0; to: 16
+            textFromValue: (v) => v === 0 ? i18n("Off") : i18n("%1 px", v)
+        }
+        RowLayout {
+            Kirigami.FormData.label: i18n("Line saturation:")
+            QQC2.Slider { id: indicatorSaturation; from: 0; to: 2; stepSize: 0.05 }
+            QQC2.Label { text: i18n("%1×", indicatorSaturation.value.toFixed(2)); Layout.minimumWidth: Kirigami.Units.gridUnit * 3 }
+        }
+        RowLayout {
+            Kirigami.FormData.label: i18n("Line brightness:")
+            QQC2.Slider { id: indicatorValue; from: 0; to: 2; stepSize: 0.05 }
+            QQC2.Label { text: i18n("%1×", indicatorValue.value.toFixed(2)); Layout.minimumWidth: Kirigami.Units.gridUnit * 3 }
         }
         QQC2.SpinBox {
             id: borderRadius

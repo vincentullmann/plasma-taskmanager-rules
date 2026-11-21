@@ -34,7 +34,7 @@ PlasmoidItem {
             if (!msg || !msg.settings || msg.stamp === root.lastAppearanceStamp) return
             root.lastAppearanceStamp = msg.stamp
             const cfg = Plasmoid.configuration
-            for (const k of ["iconSize", "fontSize", "borderRadius", "backgroundColor", "padding", "gap", "iconGap"]) {
+            for (const k of ["iconSize", "fontSize", "borderRadius", "backgroundColor", "padding", "gap", "iconGap", "indicatorHeight", "indicatorSaturation", "indicatorValue"]) {
                 if (msg.settings[k] !== undefined && cfg[k] !== msg.settings[k]) cfg[k] = msg.settings[k]
             }
         }
@@ -94,5 +94,8 @@ PlasmoidItem {
         padding: Plasmoid.configuration.padding
         gap: Plasmoid.configuration.gap
         iconGap: Plasmoid.configuration.iconGap
+        indicatorHeight: Plasmoid.configuration.indicatorHeight
+        indicatorSaturation: Plasmoid.configuration.indicatorSaturation
+        indicatorValue: Plasmoid.configuration.indicatorValue
     }
 }
