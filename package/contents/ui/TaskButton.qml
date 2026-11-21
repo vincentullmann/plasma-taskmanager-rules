@@ -24,32 +24,33 @@ Item {
     property bool tooltips: true          // off in headless tests (Plasma tooltips open real windows)
     signal dragFinished(real translation)
 
-    // Drag state, driven by the click area (a DragHandler next to a MouseArea never got the drag).
-    property bool dragging: false
-    property bool wasDragged: false       // the release that ended a drag must not count as a click
-    property real dragDelta: 0
-    property real dragStart: 0
-    property bool dragArmed: false
+    // Live drag. Positions are pointer coordinates along the list axis, in the list's content item
+    // (stable even though this delegate moves while it is dragged).
+    property real cellSize: 0             // one slot along the axis, gap included
+    property int count: 0
+    signal moveRequested(int target)      // the dragged centre crossed into another slot
 
-    function beginDrag(pos) {
-        dragStart = pos
-        dragArmed = true
-        wasDragged = false
+    property bool dragging: false
+    property bool wasDragged: false       // the release that ends a drag must not count as a click
+    property bool dragArmed: false
+    property real dragStart: 0            // pointer position at press
+    property real dragGrab: 0             // pointer offset inside the button at press
+    readonly property real slot: vertical ? y : x
+    property real dragPointer: 0
+    // How far the content is shifted from its slot so that it sits under the pointer.
+    readonly property real dragDelta: dragging ? dragPointer - dragGrab - slot : 0
+    // What is drawn: follows dragDelta exactly while dragging, eases back to the slot on release.
+    property real renderDelta: dragDelta
+    property bool settling: false
+    Behavior on renderDelta {
+        enabled: button.settling
+        NumberAnimation { duration: Kirigami.Units.shortDuration; onRunningChanged: if (!running) button.settling = false }
     }
-    function moveDrag(pos) {
-        if (!dragArmed) return
-        if (!dragging && Math.abs(pos - dragStart) < Qt.styleHints.startDragDistance) return
-        dragging = true
-        dragDelta = pos - dragStart
-    }
-    function endDrag() {
-        dragArmed = false
-        if (!dragging) return
-        const d = dragDelta
-        dragging = false
-        dragDelta = 0
-        wasDragged = true
-        dragFinished(d)
+    z: dragging ? 10 : 0
+    // The whole button (background, badges, progress) follows the pointer, like a browser tab.
+    transform: Translate {
+        x: button.vertical ? 0 : button.renderDelta
+        y: button.vertical ? button.renderDelta : 0
     }
 
     property int iconSize: Kirigami.Units.iconSizes.medium
@@ -61,6 +62,29 @@ Item {
         const f = Kirigami.Theme.defaultFont
         if (fontSize > 0) f.pointSize = fontSize
         return f
+    }
+
+    function beginDrag(pos) {
+        settling = false
+        dragStart = pos
+        dragGrab = pos - slot
+        dragArmed = true
+        wasDragged = false
+    }
+    function moveDrag(pos) {
+        if (!dragArmed) return
+        if (!dragging && Math.abs(pos - dragStart) < Qt.styleHints.startDragDistance) return
+        dragging = true
+        dragPointer = pos
+        const target = Tasks.dropIndex(dragPointer - dragGrab + cellSize / 2, cellSize, count)
+        if (target !== index) moveRequested(target)
+    }
+    function endDrag() {
+        dragArmed = false
+        if (!dragging) return
+        settling = true
+        dragging = false
+        wasDragged = true
     }
 
     readonly property bool active: model.IsActive === true
@@ -151,10 +175,6 @@ Item {
         anchors { fill: parent; leftMargin: button.padding; rightMargin: button.padding }
         spacing: button.padding
         opacity: (button.minimized || button.launcher) ? 0.5 : 1
-        transform: Translate {
-            x: button.vertical ? 0 : button.dragDelta
-            y: button.vertical ? button.dragDelta : 0
-        }
 
         Kirigami.Icon {
             id: icon
@@ -210,10 +230,14 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
 
         preventStealing: true
-        onPressed: mouseEvent => {
-            if (mouseEvent.button === Qt.LeftButton) button.beginDrag(button.vertical ? mouseEvent.y : mouseEvent.x)
+        function listPos(m) {
+            const p = mouse.mapToItem(button.parent, m.x, m.y)
+            return button.vertical ? p.y : p.x
         }
-        onPositionChanged: mouseEvent => button.moveDrag(button.vertical ? mouseEvent.y : mouseEvent.x)
+        onPressed: mouseEvent => {
+            if (mouseEvent.button === Qt.LeftButton) button.beginDrag(listPos(mouseEvent))
+        }
+        onPositionChanged: mouseEvent => button.moveDrag(listPos(mouseEvent))
         onReleased: button.endDrag()
         onCanceled: button.endDrag()
         onClicked: mouseEvent => {

@@ -30,13 +30,8 @@ ListView {
     readonly property real cellSize: vertical ? buttonHeight + gap
         : Math.min(maxButtonWidth, (width - totalGaps) / Math.max(1, count)) + gap
 
-    // Where a button ends up when dragged `translation` px along the axis from `from`.
-    function dropTarget(from, translation) {
-        return Tasks.dropIndex(from * cellSize + cellSize / 2 + translation, cellSize, count)
-    }
-
-    function commitDrag(from, translation) {
-        const to = dropTarget(from, translation)
+    // Live reorder while a button is dragged.
+    function moveTask(from, to) {
         if (to !== from) tasksModel.move(from, to)
     }
 
@@ -53,6 +48,10 @@ ListView {
     clip: true
     spacing: gap
 
+    // Others slide aside while a button is dragged through them.
+    move: Transition { NumberAnimation { properties: "x,y"; duration: Kirigami.Units.shortDuration } }
+    displaced: Transition { NumberAnimation { properties: "x,y"; duration: Kirigami.Units.shortDuration } }
+
     delegate: TaskButton {
         tasksModel: list.tasksModel
         store: list.store
@@ -61,7 +60,9 @@ ListView {
         vertical: list.vertical
         location: list.location
         tooltips: list.tooltips
-        onDragFinished: translation => list.commitDrag(index, translation)
+        cellSize: list.cellSize
+        count: list.count
+        onMoveRequested: target => list.moveTask(index, target)
         iconSize: list.iconSize
         fontSize: list.fontSize
         borderRadius: list.borderRadius

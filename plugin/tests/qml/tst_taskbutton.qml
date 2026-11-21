@@ -107,29 +107,35 @@ Item {
         b.togglePin()
         if (calls.pop() !== "add:file:///w.desktop") return fail("pin")
 
-        // dragging: small movement is a click, a long one reports the distance on release
+        // live drag: pointer positions are along the list axis; the button follows the pointer
+        // and asks for a move as soon as its centre crosses into another cell
         b = make({ display: "w", AppPid: 5, AppId: "w" })
-        let dragged = []
-        b.dragFinished.connect(d => dragged.push(d))
-        b.beginDrag(10)
-        b.moveDrag(13)
-        if (b.dragging || b.dragDelta !== 0) return fail("tiny movement must not drag")
+        b.cellSize = 100; b.count = 4; b.index = 1       // cell 1 starts at x=100
+        b.x = 100
+        let moves = []
+        b.moveRequested.connect(t => moves.push(t))
+        b.beginDrag(130)                                  // grabbed 30px into the button
+        b.moveDrag(133)
+        if (b.dragging || b.renderDelta !== 0 || moves.length) return fail("tiny movement must not drag")
         b.endDrag()
-        if (dragged.length !== 0 || b.wasDragged) return fail("tiny movement is a click")
-        b.beginDrag(10)
-        b.moveDrag(160)
-        if (!b.dragging || b.dragDelta !== 150) return fail("drag delta: " + b.dragDelta)
-        b.moveDrag(120)
-        if (b.dragDelta !== 110) return fail("drag follows the pointer: " + b.dragDelta)
+        if (b.wasDragged) return fail("tiny movement is a click")
+        b.beginDrag(130)
+        b.moveDrag(150)                                   // dragged 20px right: centre 170, still cell 1
+        if (!b.dragging || b.dragDelta !== 20 || moves.length) return fail("follows pointer: " + b.dragDelta + " moves " + moves)
+        b.moveDrag(250)                                   // dragged 120px: centre 270, cell 2
+        if (b.dragDelta !== 120 || moves.join() !== "2") return fail("live move: " + b.dragDelta + " moves " + moves)
+        b.moveDrag(10)                                    // far left: centre -90, clamped to cell 0
+        if (moves.join() !== "2,0") return fail("clamped move: " + moves)
         b.endDrag()
-        if (dragged.length !== 1 || dragged[0] !== 110 || !b.wasDragged || b.dragging || b.dragDelta !== 0) return fail("drag end: " + dragged)
+        if (b.dragging || !b.wasDragged) return fail("drag end flags")
 
-        // drag target: horizontal list, 4 buttons across 400px (100px each, no gap)
-        const l = listComp.createObject(root, { width: 400, height: 30 })
-        if (l.dropTarget(0, 0) !== 0) return fail("no drag stays put")
-        if (l.dropTarget(0, 230) !== 2) return fail("drag right 2.3 cells: " + l.dropTarget(0, 230))
-        if (l.dropTarget(3, -250) !== 1) return fail("drag left: " + l.dropTarget(3, -250))
-        if (l.dropTarget(1, 5000) !== 3) return fail("clamped to last")
+        // vertical lists use the same logic along y
+        b = make({ display: "w", AppPid: 5, AppId: "w" })
+        b.vertical = true; b.cellSize = 30; b.count = 3; b.index = 0; b.y = 0
+        moves = []
+        b.moveRequested.connect(t => moves.push(t))
+        b.beginDrag(10); b.moveDrag(50)
+        if (moves.join() !== "1") return fail("vertical live move: " + moves)
 
         console.log("PASS")
         Qt.exit(0)
